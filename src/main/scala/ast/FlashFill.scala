@@ -199,8 +199,6 @@ trait FlashFillValue extends FlashFillExpr, Value {
 
 sealed trait IntegerExpr extends FlashFillExpr {
   override def typ: Type = IntegerType
-
-
 }
 
 sealed trait BooleanExpr extends FlashFillExpr {

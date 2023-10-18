@@ -20,7 +20,18 @@ object Synthesize {
       result
     }
 
-
+  /**
+   * Gets all possible combinations of well typed arguments
+   * @param w
+   * @param e
+   * @param numArgs
+   * @param argTypes
+   * @tparam E
+   * @tparam O
+   * @tparam T
+   * @tparam V
+   * @return
+   */
   def getArgs[E <: Expr, O <: Op, T <: Type, V <: E](
                                                           w: Int,
                                                           e: Map[Int, Map[E, List[V]]],
@@ -44,7 +55,18 @@ object Synthesize {
     result
 
 
-
+  /**
+   * Implements the bustle algorithm for synthesis
+   * @param lang
+   * @param inputs
+   * @param outputs
+   * @param n
+   * @tparam E
+   * @tparam O
+   * @tparam T
+   * @tparam V
+   * @return
+   */
   def synthesize[E <: Expr, O <: Op, T <: Type, V <: E](lang: Language[E, O, T, V], inputs: List[List[V]], outputs: List[V], n: Int = 10): E = {
     var e: Map[Int, Map[E, List[V]]] = Map()
     val constants = lang.extractConstants(inputs, outputs)
@@ -72,7 +94,7 @@ object Synthesize {
                   return constructExprToAdd
                 }
               } catch
-                case _ =>
+                case e:RuntimeException =>
             }
           }
         }
