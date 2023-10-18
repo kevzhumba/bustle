@@ -2,7 +2,7 @@ package ast
 
 import java.io.File
 
-trait Language[E <: Expr, O <: Op, T <: Type, V <: E] {
+trait Language[E <: Expr, O <: Op, T <: Type, V <: E with Value] {
   def ops: List[O]
 
   def getOpInfo(op: O): (Int, List[T], T)

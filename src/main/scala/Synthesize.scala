@@ -1,4 +1,4 @@
-import ast.{Expr, Language, Op, Type, Value, Var}
+import ast.{Expr, Language, Op, Type, Value}
 
 object Synthesize {
 
@@ -22,17 +22,8 @@ object Synthesize {
 
   /**
    * Gets all possible combinations of well typed arguments
-   * @param w
-   * @param e
-   * @param numArgs
-   * @param argTypes
-   * @tparam E
-   * @tparam O
-   * @tparam T
-   * @tparam V
-   * @return
    */
-  def getArgs[E <: Expr, O <: Op, T <: Type, V <: E](
+  def getArgs[E <: Expr, O <: Op, T <: Type, V <: E with Value](
                                                           w: Int,
                                                           e: Map[Int, Map[E, List[V]]],
                                                           numArgs: Int,
@@ -40,13 +31,12 @@ object Synthesize {
                                                         ): List[List[(E, List[V])]] =
     val possibleSizes = getSizeCombos(w-1, numArgs)
     var result: List[List[(E, List[V])]]= List()
-    //For each of the arg sizes, we want to construct a list of all possible args give that list of sizes
-    //How to do this? For each index in the arg size, gather all expressions that match. We need to get all combos right?
+
     for (argSizes <- possibleSizes) {
       var intermediate: List[List[(E, List[V])]] = List(List())
       for ((size, idx) <- argSizes.zipWithIndex) {
         val targetType = argTypes(idx)
-        val validEntries = e(size).filter(kv => kv._1.typ == targetType).toList
+        val validEntries = e(size).filter(kv => kv._1.typ == targetType).toList //instead of doing this you can explicitly track types in e
         val crossProduct = for {x <- intermediate; y <- validEntries} yield y::x //this will lead everything to be in reverse order of arg index
         intermediate = crossProduct
       }
@@ -57,23 +47,16 @@ object Synthesize {
 
   /**
    * Implements the bustle algorithm for synthesis
-   * @param lang
-   * @param inputs
-   * @param outputs
-   * @param n
-   * @tparam E
-   * @tparam O
-   * @tparam T
-   * @tparam V
-   * @return
    */
-  def synthesize[E <: Expr, O <: Op, T <: Type, V <: E](lang: Language[E, O, T, V], inputs: List[List[V]], outputs: List[V], n: Int = 10): E = {
+  def synthesize[E <: Expr, O <: Op, T <: Type, V <: E with Value](lang: Language[E, O, T, V], inputs: List[List[V]], outputs: List[V], n: Int = 10): E = {
+    if (inputs.size != outputs.size) {
+      throw RuntimeException("Invalid input output sizes")
+    }
     var e: Map[Int, Map[E, List[V]]] = Map()
     val constants = lang.extractConstants(inputs, outputs)
     var values: Set[List[V]] = constants.values.toSet
     e += (1 -> constants)
     for (w <- Range(2, n)) {
-      println(w)
       for (op <- lang.ops) {
         val (numArgs, argTypes, retType) = lang.getOpInfo(op)
         if ((numArgs + 1) <= w) {
@@ -82,7 +65,6 @@ object Synthesize {
             if (args.nonEmpty) {
               val constructExprToAdd = lang.buildExpr(op, args.map(_._1))
               val constructExprsToEval = for {i <- Range(0, outputs.size)} yield lang.buildExpr(op, args.map(_._2(i))) // one for each io example
-              //Exprs to eval are guaranteed to not have any variables
               try { //in case eval expr fails
                 val results = constructExprsToEval.map(expr => lang.evalExpr(expr)).toList
                 if (!values.contains(results)) {
@@ -90,11 +72,10 @@ object Synthesize {
                   e += (w -> (e.getOrElse(w, Map()) + (constructExprToAdd -> results)))
                 }
                 if (results == outputs) {
-                  println(constructExprToAdd)
                   return constructExprToAdd
                 }
               } catch
-                case e:RuntimeException =>
+                case e: RuntimeException =>
             }
           }
         }

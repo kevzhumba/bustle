@@ -1,4 +1,4 @@
-import ast.{Expr, Language, Op, Type, Value, Var}
+import ast.{Expr, Language, Op, Type, Value}
 
 import java.io.File
 
@@ -191,11 +191,8 @@ case object PropercaseOp extends FlashFillOps
 case object IfOp extends FlashFillOps
 
 /** Expressions */
-trait FlashFillExpr extends Expr {
-
-}
-trait FlashFillValue extends FlashFillExpr, Value {
-}
+sealed trait FlashFillExpr extends Expr
+sealed trait FlashFillValue extends FlashFillExpr, Value
 
 sealed trait IntegerExpr extends FlashFillExpr {
   override def typ: Type = IntegerType
@@ -208,7 +205,6 @@ sealed trait BooleanExpr extends FlashFillExpr {
 sealed trait StringExpr extends FlashFillExpr {
   override def typ: Type = StringType
 }
-
 
 case class IntegerSum(i1: IntegerExpr, i2: IntegerExpr) extends IntegerExpr
 case class IntegerMinus(i1: IntegerExpr, i2: IntegerExpr) extends IntegerExpr
@@ -233,4 +229,4 @@ case class If(b: BooleanExpr, s1: StringExpr, s2: StringExpr) extends StringExpr
 case class IntConst(i: Int) extends IntegerExpr, FlashFillValue
 case class StringConst(s: String) extends StringExpr, FlashFillValue
 case class BooleanConst(b: Boolean) extends BooleanExpr, FlashFillValue
-case class FlashFillVar(name: String) extends StringExpr, Var
+case class FlashFillVar(name: String) extends StringExpr

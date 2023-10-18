@@ -103,12 +103,10 @@ object ArithmeticManipulation extends Language[ArithmeticManipulationExpr, Arith
     List(
       BoolConst(true),
       BoolConst(false),
-    ) ++ Range(0, 101).toList.map(ArithConst(_))
+    ) ++ Range(0, 11).toList.map(ArithConst(_))
 }
 /** Types */
-sealed trait ArithmeticManipulationType extends Type {
-
-}
+sealed trait ArithmeticManipulationType extends Type
 case object IntegerType extends ArithmeticManipulationType
 case object BooleanType extends ArithmeticManipulationType
 
@@ -127,9 +125,7 @@ case object EqOp extends ArithmeticManipulationOps
 case object IfOp extends ArithmeticManipulationOps
 
 /** Expressions */
-
-trait ArithmeticManipulationExpr extends Expr {
-}
+sealed trait ArithmeticManipulationExpr extends Expr
 
 sealed trait IntegerExpression extends ArithmeticManipulationExpr {
   override def typ: Type = IntegerType
@@ -138,6 +134,8 @@ sealed trait IntegerExpression extends ArithmeticManipulationExpr {
 sealed trait BooleanExpression extends ArithmeticManipulationExpr {
   override def typ: Type = BooleanType
 }
+
+sealed trait ArithmeticManipulationValue extends ArithmeticManipulationExpr, Value  //element type denotes this values typ
 
 case class Add(i1: IntegerExpression, i2: IntegerExpression) extends IntegerExpression
 case class Minus(i1: IntegerExpression, i2: IntegerExpression) extends IntegerExpression
@@ -148,7 +146,6 @@ case class Neg(i1: IntegerExpression) extends IntegerExpression
 case class If(b: BooleanExpression, i1: IntegerExpression, i2: IntegerExpression) extends IntegerExpression
 case class ArithConst(i: Int) extends IntegerExpression, ArithmeticManipulationValue
 
-
 case class GT(i1: IntegerExpression, i2: IntegerExpression) extends BooleanExpression
 case class GTE(i1: IntegerExpression, i2: IntegerExpression) extends BooleanExpression
 case class Eq(i1: IntegerExpression, i2: IntegerExpression) extends BooleanExpression
@@ -157,9 +154,6 @@ case class BoolConst(b: Boolean) extends BooleanExpression, ArithmeticManipulati
 
 case class ArithmeticManipulationVar(name: String) extends ArithmeticManipulationExpr, IntegerExpression
 
-trait ArithmeticManipulationValue extends ArithmeticManipulationExpr, Value { //element type denotes this values typ
-
-}
 
 
 
